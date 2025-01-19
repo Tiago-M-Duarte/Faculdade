@@ -28,14 +28,6 @@ public class Movimentacao {
         this.tipo = tipo;
     }
 
-    public Cliente getCliente() {
-        return cliente;
-    }
-
-    public void setCliente(Cliente cliente) {
-        this.cliente = cliente;
-    }
-
     public String getDescricao() {
         return descricao;
     }
@@ -53,14 +45,19 @@ public class Movimentacao {
     }
     private Date data;
     private String tipo;
-    private Cliente cliente;
     private String descricao;
     private double valor;
     
-    public Movimentacao(String tipo, Cliente cliente, String descricao, double valor) {
+    public Movimentacao(String tipo, String descricao, double valor) {
         this.data = new Date();
         this.tipo = tipo;
-        this.cliente = cliente;
+        this.descricao = descricao;
+        this.valor = valor;
+    }
+
+    public Movimentacao(String tipo, String descricao, double valor, Date data) {
+        this.data = data;
+        this.tipo = tipo;
         this.descricao = descricao;
         this.valor = valor;
     }

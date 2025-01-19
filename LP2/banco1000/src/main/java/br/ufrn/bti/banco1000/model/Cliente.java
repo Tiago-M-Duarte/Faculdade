@@ -16,6 +16,7 @@ public class Cliente {
     private String email;
     private String telefone;
     private String senha;
+    private int agenciaLogada;
     private int contaLogada;
     private ArrayList<Conta> contas = new ArrayList();
 
@@ -63,36 +64,21 @@ public class Cliente {
         return contas.get(conta);
     }
 
-    public Conta getContaPorNumero(int numeroConta) {
-        for (Conta conta : contas) {
-            if(conta.getNumConta() == numeroConta) {
-                return conta;
-            }
-        }
-        System.out.println("Conta inexistente!");
-        return null;
-    }
-
-    public void listarContas() {
-        for(int i = 0; i < contas.size(); i++){
-            System.out.println("Conta " + (i+1) + ":");
-            System.out.println("Nome: " + contas.get(i).getNome());
-            System.out.println("Agência: " + contas.get(i).getAgencia());
-            System.out.println("Numero da conta: " + contas.get(i).getNumConta());
-            System.out.println("Tipo: " + contas.get(i).getAgencia());
-        }
-    }
-
     public void addContas(Conta conta) {
         this.contas.add(conta);
+    }
+
+    public int getAgenciaLogada() {
+        return agenciaLogada;
     }
 
     public int getContaLogada() {
         return contaLogada;
     }
 
-    public void setContaLogada(int contaLogada) {
+    public void setContaLogada(int contaLogada, int agencia) {
         this.contaLogada = contaLogada;
+        this.agenciaLogada = agencia;
     }
 
     public String getSenha() {

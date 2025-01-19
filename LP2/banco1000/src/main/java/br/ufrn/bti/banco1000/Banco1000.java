@@ -4,10 +4,9 @@
 
 package br.ufrn.bti.banco1000;
 
-import br.ufrn.bti.banco1000.model.Cliente;
-import br.ufrn.bti.banco1000.model.Conta;
-import br.ufrn.bti.banco1000.model.Movimentacao;
+import br.ufrn.bti.banco1000.model.*;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Scanner;
@@ -17,6 +16,40 @@ import java.util.Scanner;
  * @author Tiago
  */
 public class Banco1000 {
+
+    public static void salvarClientes(ArrayList<Cliente> clientes) throws IOException {
+        File arquivo = new File("./LP2/banco1000/src/main/java/br/ufrn/bti/banco1000/cache/clientes.txt");
+
+        if (!arquivo.exists()) {
+            arquivo.createNewFile();
+        }
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(arquivo))) {
+            for (Cliente cliente : clientes) {
+                writer.write(String.format("%s,%s,%s,%s,%s\n",
+                        cliente.getNome(),
+                        cliente.getCpf(),
+                        cliente.getEmail(),
+                        cliente.getTelefone(),
+                        cliente.getSenha()));
+            }
+        }
+    }
+
+    public static ArrayList<Cliente> carregarClientes() throws IOException {
+        ArrayList<Cliente> clientes = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader("./LP2/banco1000/src/main/java/br/ufrn/bti/banco1000/cache/clientes.txt"))) {
+            String linha;
+            while ((linha = reader.readLine()) != null) {
+                String[] dados = linha.split(",");
+                if (dados.length == 5) {
+                    clientes.add(new Cliente(dados[0], dados[1], dados[2], dados[3], dados[4]));
+                }
+            }
+        } catch (FileNotFoundException e) {
+            // Arquivo de clientes não encontrado
+        }
+        return clientes;
+    }
 
     public static Cliente criarCadastro() {
         Scanner scan = new Scanner(System.in);
@@ -34,23 +67,25 @@ public class Banco1000 {
         return new Cliente(nome, cpf, email, telefone, senha);
     }
 
-    public static Conta criarConta() {
+    public static Conta criarConta(Agencias agencias, Cliente cliente) {
         Scanner scan = new Scanner(System.in);
         System.out.println("Crie uma conta no banco digital");
+        System.out.println("Em qual agencia deseja criar? 1 - 2 - 3:");
+        int agencia = scan.nextInt();
+        scan.nextLine();
         System.out.println("Qual o nome da nova conta?:");
         String nome = scan.nextLine();
-        System.out.println("Qual o tipo da nova conta? (C para Corrente e P para poupança):");
+        System.out.println("Qual o tipo da nova conta? (C para Corrente, P para poupança, S para Salario):");
         char tipo = scan.next().charAt(0);
         System.out.println("Qual a senha da nova conta?(Digite apenas números):");
         int senha = scan.nextInt();
         System.out.println("Conta nova criada!");
-
-        return new Conta(nome, tipo, senha);
+        return agencias.addConta(nome, tipo, senha, cliente, agencia);
     }
 
-    public static void menuConta( Cliente cliente, ArrayList<Cliente> clientes) {
+    public static void menuConta( Cliente cliente, ArrayList<Cliente> clientes, Agencias agencias) {
         Scanner scan = new Scanner(System.in);
-        Conta contaAcessada = cliente.getConta(cliente.getContaLogada());
+        Conta contaAcessada = agencias.getConta(cliente.getAgenciaLogada(), cliente.getContaLogada());
         boolean logado = true;
         while (logado) {
             System.out.println("Bem vindo a conta " + contaAcessada.getNome() + ", digite qual opção deseja acessar!");
@@ -78,39 +113,29 @@ public class Banco1000 {
                     contaAcessada.exibirMovimentacao();
                     break;
                 case 5:
-                    System.out.println("Digite o CPF referente à conta para a qual deseja transferir:");
-                    String cpf = scan.next();
-                    boolean cpfEncontrado = false;
-                    for (Cliente clienteAlvo : clientes) {
-                        if (Objects.equals(clienteAlvo.getCpf(), cpf)) {
-                            cpfEncontrado = true;
-                            System.out.println("Digite o número da conta para a qual deseja transferir:");
-                            int contaNum = scan.nextInt();
-                            Conta contaAlvo = clienteAlvo.getContaPorNumero(contaNum);
-                            if (contaAlvo != null) {
-                                System.out.println("Digite o valor que deseja transferir:");
-                                double valor = scan.nextDouble();
-                                contaAcessada.transferir(contaAlvo, valor);
-                                System.out.println("Transferência realizada com sucesso!");
-                            } else {
-                                System.out.println("Número da conta inválido.");
-                            }
-                            break;
-                        }
-                    }
-                    if (!cpfEncontrado) {
-                        System.out.println("CPF inválido.");
+                    System.out.println("Digite o número da agencia da conta para a qual deseja transferir:");
+                    int agencia = scan.nextInt();
+                    System.out.println("Digite o número da conta para a qual deseja transferir:");
+                    int contaNum = scan.nextInt();
+                    Conta contaAlvo = agencias.getConta(agencia, contaNum);
+                    if (contaAlvo != null) {
+                        System.out.println("Digite o valor que deseja transferir:");
+                        double valor = scan.nextDouble();
+                        contaAcessada.transferir(contaAlvo, valor);
+                        System.out.println("Transferência realizada com sucesso!");
+                    } else {
+                        System.out.println("Número da conta inválido.");
                     }
                     break;
                 case 9:
-                    cliente.setContaLogada(-1);
+                    cliente.setContaLogada(-1, -1);
                     logado = false;
                     break;
             }
         }
     }
 
-    public static void menuCliente( Cliente cliente, ArrayList<Cliente> clientes) {
+    public static void menuCliente( Cliente cliente, ArrayList<Cliente> clientes, Agencias agencias) {
         Scanner scan = new Scanner(System.in);
         boolean logado = true;
         while (logado) {
@@ -122,16 +147,18 @@ public class Banco1000 {
             int opcao = scan.nextInt();
             switch (opcao) {
                 case 1:
-                    cliente.addContas(criarConta());
+                    criarConta(agencias, cliente);
                     break;
                 case 2:
-                    cliente.listarContas();
+                    agencias.getContas(cliente);
                     break;
                 case 3:
+                    System.out.println("Digite o número da agência que deseja logar: (1 - 2 - 3)");
+                    int agenciaLogada = scan.nextInt();
                     System.out.println("Digite o número da conta que deseja logar:");
                     int contaLogada = scan.nextInt();
-                    cliente.setContaLogada(contaLogada-1);
-                    menuConta(cliente, clientes);
+                    cliente.setContaLogada(contaLogada, agenciaLogada);
+                    menuConta(cliente, clientes, agencias);
                     break;
                 case 9:
                     logado = false;
@@ -139,7 +166,8 @@ public class Banco1000 {
             }
         }
     }
-    public static void menuInicial(ArrayList<Cliente> clientes) {
+
+    public static void menuInicial(ArrayList<Cliente> clientes, Agencias agencias) {
         Scanner scan = new Scanner(System.in);
         boolean logado = false;
         while (!logado) {
@@ -147,7 +175,7 @@ public class Banco1000 {
             System.out.println("1 - Entrar com usuário existente");
             System.out.println("2 - Criar cadastro");
             System.out.println("3 - Listar cadastros");
-            System.out.println("9 - Fechar aplicação(Todos os dados serão perdidos)");
+            System.out.println("9 - Fechar aplicação");
             int opcao = scan.nextInt();
             switch (opcao) {
                 case 1:
@@ -159,7 +187,7 @@ public class Banco1000 {
                             String senha = scan.next();
                             if (Objects.equals(cliente.getSenha(), senha)) {
                                 System.out.println("Login realizado com sucesso!");
-                                menuCliente(cliente, clientes);
+                                menuCliente(cliente, clientes, agencias);
                             } else {
                                 System.out.println("Senha invalida");
                             }
@@ -186,18 +214,28 @@ public class Banco1000 {
         }
     }
 
-    public static void main(String[] args) {
-        Scanner scan = new Scanner(System.in);
-        Cliente novoCliente = criarCadastro();
-        // Eu devia ter feito uma classe para a array de clientes ;-;, quem sabe na continuação da atividade, agora tá em cima da entrega.
-        ArrayList<Cliente> clientes = new ArrayList();
-        clientes.add(novoCliente);
-        System.out.println("Como é seu primeiro acesso");
-        novoCliente.addContas(criarConta());
-        novoCliente.setContaLogada(0);
-        menuConta(novoCliente, clientes);
-        menuCliente(novoCliente, clientes);
-        menuInicial(clientes);
+    public static void main(String[] args) throws IOException {
+        ArrayList<Cliente> clientes = carregarClientes();
+        Agencias agencias = new Agencias(clientes);
+        if (agencias.getLenght() < 1){
+            System.out.println("Arquivo de agências não encontrado, criando-as");
+            agencias.add(new Agencia(1));
+            agencias.add(new Agencia(2));
+            agencias.add(new Agencia(3));
+        }
+        if (clientes.isEmpty()){
+            System.out.println("Arquivo de clientes não encontrado, então");
+            Cliente novoCliente = criarCadastro();
+            clientes.add(novoCliente);
+            System.out.println("Como é seu primeiro acesso");
+            Conta primeiraConta = criarConta(agencias, novoCliente);
+            novoCliente.setContaLogada(primeiraConta.getNumConta(), primeiraConta.getAgencia());
+            menuConta(novoCliente, clientes, agencias);
+            menuCliente(novoCliente, clientes, agencias);
+        }
+        menuInicial(clientes, agencias);
+        salvarClientes(clientes);
+        agencias.salvarAgencias();
     }
 
 }
