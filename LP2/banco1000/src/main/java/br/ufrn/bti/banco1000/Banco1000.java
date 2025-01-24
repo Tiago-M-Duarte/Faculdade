@@ -16,7 +16,7 @@ import java.util.Scanner;
  * @author Tiago
  */
 public class Banco1000 {
-
+    private static Scanner scan = new Scanner(System.in);
     public static void salvarClientes(ArrayList<Cliente> clientes) throws IOException {
         File arquivo = new File("./LP2/banco1000/src/main/java/br/ufrn/bti/banco1000/cache/clientes.txt");
 
@@ -52,7 +52,6 @@ public class Banco1000 {
     }
 
     public static Cliente criarCadastro() {
-        Scanner scan = new Scanner(System.in);
         System.out.println("Crie uma cadastro no banco digital");
         System.out.println("Qual o seu nome completo?:");
         String nome = scan.nextLine();
@@ -68,7 +67,6 @@ public class Banco1000 {
     }
 
     public static Conta criarConta(Agencias agencias, Cliente cliente) {
-        Scanner scan = new Scanner(System.in);
         System.out.println("Crie uma conta no banco digital");
         System.out.println("Em qual agencia deseja criar? 1 - 2 - 3:");
         int agencia = scan.nextInt();
@@ -79,12 +77,12 @@ public class Banco1000 {
         char tipo = scan.next().charAt(0);
         System.out.println("Qual a senha da nova conta?(Digite apenas números):");
         int senha = scan.nextInt();
+        scan.nextLine();
         System.out.println("Conta nova criada!");
         return agencias.addConta(nome, tipo, senha, cliente, agencia);
     }
 
     public static void menuConta( Cliente cliente, ArrayList<Cliente> clientes, Agencias agencias) {
-        Scanner scan = new Scanner(System.in);
         Conta contaAcessada = agencias.getConta(cliente.getAgenciaLogada(), cliente.getContaLogada());
         boolean logado = true;
         while (logado) {
@@ -95,15 +93,20 @@ public class Banco1000 {
             System.out.println("4 - Visualizar extrato");
             System.out.println("5 - Transferir para outra conta");
             System.out.println("9 - Sair da conta");
-            int opcao = scan.nextInt();
+            String opcaoDigitada = scan.nextLine();
+            int opcao = Integer.parseInt(opcaoDigitada);
             switch (opcao) {
                 case 1:
                     System.out.println("Digite o valor do deposito:");
-                    contaAcessada.depositar(scan.nextDouble());
+                    String depositoStr = scan.nextLine();
+                    double deposito = Double.parseDouble(depositoStr);
+                    contaAcessada.depositar(deposito);
                     break;
                 case 2:
                     System.out.println("Digite o valor do saque:");
-                    contaAcessada.sacar(scan.nextDouble());
+                    String saqueStr = scan.nextLine();
+                    double saque = Double.parseDouble(saqueStr);
+                    contaAcessada.sacar(saque);
                     break;
                 case 3:
                     System.out.println("Saldo atual da conta: " +contaAcessada.getSaldo());
@@ -115,13 +118,16 @@ public class Banco1000 {
                 case 5:
                     System.out.println("Digite o número da agencia da conta para a qual deseja transferir:");
                     int agencia = scan.nextInt();
+                    scan.nextLine();
                     System.out.println("Digite o número da conta para a qual deseja transferir:");
                     int contaNum = scan.nextInt();
+                    scan.nextLine();
                     Conta contaAlvo = agencias.getConta(agencia, contaNum);
                     if (contaAlvo != null) {
                         System.out.println("Digite o valor que deseja transferir:");
-                        double valor = scan.nextDouble();
-                        contaAcessada.transferir(contaAlvo, valor);
+                        String valorStr = scan.nextLine();
+                        double valor = Double.parseDouble(valorStr);
+                        contaAcessada.transferir(agencias.getConta(agencia, contaNum), valor);
                         System.out.println("Transferência realizada com sucesso!");
                     } else {
                         System.out.println("Número da conta inválido.");
@@ -136,7 +142,6 @@ public class Banco1000 {
     }
 
     public static void menuCliente( Cliente cliente, ArrayList<Cliente> clientes, Agencias agencias) {
-        Scanner scan = new Scanner(System.in);
         boolean logado = true;
         while (logado) {
             System.out.println("Bem vindo " + cliente.getNome() + ", digite qual opção deseja acessar!");
@@ -144,7 +149,8 @@ public class Banco1000 {
             System.out.println("2 - Listar contas");
             System.out.println("3 - Logar na conta");
             System.out.println("9 - Sair");
-            int opcao = scan.nextInt();
+            String opcaoDigitada = scan.nextLine();
+            int opcao = Integer.parseInt(opcaoDigitada);
             switch (opcao) {
                 case 1:
                     criarConta(agencias, cliente);
@@ -155,8 +161,10 @@ public class Banco1000 {
                 case 3:
                     System.out.println("Digite o número da agência que deseja logar: (1 - 2 - 3)");
                     int agenciaLogada = scan.nextInt();
+                    scan.nextLine();
                     System.out.println("Digite o número da conta que deseja logar:");
                     int contaLogada = scan.nextInt();
+                    scan.nextLine();
                     cliente.setContaLogada(contaLogada, agenciaLogada);
                     menuConta(cliente, clientes, agencias);
                     break;
@@ -168,7 +176,6 @@ public class Banco1000 {
     }
 
     public static void menuInicial(ArrayList<Cliente> clientes, Agencias agencias) {
-        Scanner scan = new Scanner(System.in);
         boolean logado = false;
         while (!logado) {
             System.out.println("Bem vindo ao banco digital 1000, digite qual opção deseja acessar!");
@@ -176,15 +183,16 @@ public class Banco1000 {
             System.out.println("2 - Criar cadastro");
             System.out.println("3 - Listar cadastros");
             System.out.println("9 - Fechar aplicação");
-            int opcao = scan.nextInt();
+            String opcaoDigitada = scan.nextLine();
+            int opcao = Integer.parseInt(opcaoDigitada);
             switch (opcao) {
                 case 1:
                     System.out.println("Digite seu CPF:");
-                    String cpf = scan.next();
+                    String cpf = scan.nextLine();
                     for (Cliente cliente : clientes) {
                         if (Objects.equals(cliente.getCpf(), cpf)) {
                             System.out.println("Qual a senha da conta?:");
-                            String senha = scan.next();
+                            String senha = scan.nextLine();
                             if (Objects.equals(cliente.getSenha(), senha)) {
                                 System.out.println("Login realizado com sucesso!");
                                 menuCliente(cliente, clientes, agencias);
@@ -214,28 +222,56 @@ public class Banco1000 {
         }
     }
 
-    public static void main(String[] args) throws IOException {
-        ArrayList<Cliente> clientes = carregarClientes();
-        Agencias agencias = new Agencias(clientes);
-        if (agencias.getLenght() < 1){
-            System.out.println("Arquivo de agências não encontrado, criando-as");
-            agencias.add(new Agencia(1));
-            agencias.add(new Agencia(2));
-            agencias.add(new Agencia(3));
+    public static void main(String[] args) {
+        ArrayList<Cliente> clientes = null;
+        Agencias agencias = null;
+        try {
+            // Carregar clientes e agências
+            clientes = carregarClientes();
+            agencias = new Agencias(clientes);
+
+            // Criar agências caso nenhuma esteja carregada
+            if (agencias.getLenght() < 1) {
+                System.out.println("Arquivo de agências não encontrado, criando-as");
+                agencias.add(new Agencia(1));
+                agencias.add(new Agencia(2));
+                agencias.add(new Agencia(3));
+            }
+
+            // Criar cliente e conta caso nenhum cliente esteja registrado
+            if (clientes.isEmpty()) {
+                System.out.println("Arquivo de clientes não encontrado, então:");
+                Cliente novoCliente = criarCadastro();
+                clientes.add(novoCliente);
+                System.out.println("Como é seu primeiro acesso:");
+                Conta primeiraConta = criarConta(agencias, novoCliente);
+                novoCliente.setContaLogada(primeiraConta.getNumConta(), primeiraConta.getAgencia());
+                menuConta(novoCliente, clientes, agencias);
+                menuCliente(novoCliente, clientes, agencias);
+            }
+
+            // Exibir menu inicial
+            menuInicial(clientes, agencias);
+
+            // Salvar dados no final do programa
+            salvarClientes(clientes);
+            agencias.salvarAgencias();
+            System.out.println("Dados salvos com sucesso!");
+
+        } catch (FileNotFoundException e) {
+            System.err.println("Erro: Arquivo necessário não encontrado - " + e.getMessage());
+        } catch (IOException e) {
+            System.err.println("Erro de entrada/saída ao acessar os arquivos - " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            System.err.println("Erro nos dados fornecidos: " + e.getMessage());
+        } catch (IllegalStateException e) {
+            System.err.println("Erro no estado do sistema: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Erro inesperado: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            System.out.println("Encerrando o programa.");
         }
-        if (clientes.isEmpty()){
-            System.out.println("Arquivo de clientes não encontrado, então");
-            Cliente novoCliente = criarCadastro();
-            clientes.add(novoCliente);
-            System.out.println("Como é seu primeiro acesso");
-            Conta primeiraConta = criarConta(agencias, novoCliente);
-            novoCliente.setContaLogada(primeiraConta.getNumConta(), primeiraConta.getAgencia());
-            menuConta(novoCliente, clientes, agencias);
-            menuCliente(novoCliente, clientes, agencias);
-        }
-        menuInicial(clientes, agencias);
-        salvarClientes(clientes);
-        agencias.salvarAgencias();
     }
 
 }

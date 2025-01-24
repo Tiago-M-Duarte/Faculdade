@@ -1,14 +1,6 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package br.ufrn.bti.banco1000.model;
-import java.util.ArrayList;
 
-/**
- *
- * @author Tiago
- */
+import java.util.ArrayList;
 
 public class Cliente {
     private String nome;
@@ -16,11 +8,23 @@ public class Cliente {
     private String email;
     private String telefone;
     private String senha;
-    private int agenciaLogada;
-    private int contaLogada;
-    private ArrayList<Conta> contas = new ArrayList();
+    private int agenciaLogada = -1; // Inicializa como não logado
+    private int contaLogada = -1; // Inicializa como não logado
 
     public Cliente(String nome, String cpf, String email, String telefone, String senha) {
+        if (nome == null || nome.isEmpty()) {
+            throw new IllegalArgumentException("O nome não pode ser nulo ou vazio.");
+        }
+        if (cpf == null || cpf.length() != 11 || !cpf.matches("\\d+")) {
+            throw new IllegalArgumentException("O CPF deve conter 11 dígitos numéricos.");
+        }
+        if (telefone == null || telefone.isEmpty()) {
+            throw new IllegalArgumentException("O telefone não pode ser nulo ou vazio.");
+        }
+        if (senha == null || senha.isEmpty()) {
+            throw new IllegalArgumentException("A senha não pode ser nula ou vazia.");
+        }
+
         this.nome = nome;
         this.cpf = cpf;
         this.email = email;
@@ -32,40 +36,16 @@ public class Cliente {
         return nome;
     }
 
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
     public String getCpf() {
         return cpf;
-    }
-
-    public void setCpf(String cpf) {
-        this.cpf = cpf;
     }
 
     public String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
     public String getTelefone() {
         return telefone;
-    }
-
-    public void setTelefone(String telefone) {
-        this.telefone = telefone;
-    }
-
-    public Conta getConta(int conta) {
-        return contas.get(conta);
-    }
-
-    public void addContas(Conta conta) {
-        this.contas.add(conta);
     }
 
     public int getAgenciaLogada() {
