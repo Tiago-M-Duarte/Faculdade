@@ -11,6 +11,7 @@ import java.util.Date;
 public class Agencias {
     private ArrayList<Agencia> agencias = new ArrayList<>();
     private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private final Scanner scan = new Scanner(System.in);
 
     public Agencia getAgencia(int codigo) {
         if (codigo <= 0) {
@@ -36,14 +37,14 @@ public class Agencias {
         return contaEncontrada;
     }
 
-    public void getContas(Cliente cliente){
+    public void getContas(Cliente cliente) {
         Scanner scan = new Scanner(System.in);
         System.out.println("Listar contas de qual agência? 1 - 2 - 3:");
         int agencia = scan.nextInt();
         this.getAgencia(agencia).listarContasCliente(cliente);
     }
 
-    public int getLenght(){
+    public int getLenght() {
         return agencias.size();
     }
 
@@ -71,11 +72,9 @@ public class Agencias {
                 contaNova = new ContaPoupanca(nome, tipo, senha, cliente, agenciaCodigo);
                 break;
             case 'S':
-                try (Scanner scan = new Scanner(System.in)) {
-                    System.out.println("Qual o CPF do seu empregador?");
-                    String cpfEmpregador = scan.nextLine();
-                    contaNova = new ContaSalario(nome, tipo, senha, cliente, agenciaCodigo, cpfEmpregador);
-                }
+                System.out.println("Qual o CPF do seu empregador?");
+                String cpfEmpregador = scan.nextLine();
+                contaNova = new ContaSalario(nome, tipo, senha, cliente, agenciaCodigo, cpfEmpregador);
                 break;
             default:
                 throw new IllegalArgumentException("Tipo de conta inválido: " + tipo);
@@ -154,7 +153,7 @@ public class Agencias {
                                         Double.parseDouble(dados[3]), // Saldo
                                         Integer.parseInt(dados[5]) // Numero da conta
                                 ));
-                            } else if (dados[1].charAt(0) == 'P'){
+                            } else if (dados[1].charAt(0) == 'P') {
                                 agenciaAtual.addConta(new ContaPoupanca(
                                         dados[0], // Nome
                                         dados[1].charAt(0), // Tipo
@@ -164,7 +163,7 @@ public class Agencias {
                                         Double.parseDouble(dados[3]), // Saldo
                                         Integer.parseInt(dados[5]) // Numero da conta
                                 ));
-                            } else if (dados[1].charAt(0) == 'S'){
+                            } else if (dados[1].charAt(0) == 'S') {
                                 agenciaAtual.addConta(new ContaSalario(
                                         dados[0], // Nome
                                         dados[1].charAt(0), // Tipo
